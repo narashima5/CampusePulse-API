@@ -31,29 +31,21 @@ app.use(
   })
 );
 
-// CORS configuration with whitelist support
-const allowedOrigins = process.env.CLIENT_ORIGIN
-  ? process.env.CLIENT_ORIGIN.split(',').map((s) => s.trim())
-  : ['http://localhost:5173', 'http://127.0.0.1:5173'];
-
+// CORS configuration allowing Firebase Web App, localhost, and other client origins
 app.use(
   cors({
     origin: (origin, callback) => {
-      if (
-        !origin ||
-        allowedOrigins.includes('*') ||
-        allowedOrigins.includes(origin) ||
-        process.env.NODE_ENV !== 'production'
-      ) {
-        return callback(null, true);
-      }
-      return callback(new Error('CORS request origin rejected by server policy'));
+      // Allow any requesting origin (reflects origin header, compatible with credentials: true)
+      callback(null, true);
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   })
 );
+
+// Explicit preflight handler
+app.options('*', cors());
 
 app.use(express.json({ limit: '10mb' }));
 
